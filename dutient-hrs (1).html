@@ -1,0 +1,1770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dutient HR Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Archivo:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0F172A;
+            --primary-light: #1E293B;
+            --accent: #F59E0B;
+            --accent-hover: #D97706;
+            --success: #10B981;
+            --danger: #EF4444;
+            --warning: #F59E0B;
+            --info: #3B82F6;
+            --bg: #F8FAFC;
+            --bg-card: #FFFFFF;
+            --text: #0F172A;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Archivo', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        nav ul {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--accent);
+        }
+
+        /* Main Content */
+        main {
+            padding: 2rem 0;
+            min-height: calc(100vh - 200px);
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-family: 'Archivo', sans-serif;
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .card-title {
+            font-family: 'Archivo', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .stat-value {
+            font-family: 'Archivo', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .stat-trend {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-light);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--bg);
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem;
+            font-weight: 600;
+            font-family: 'Archivo', sans-serif;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:hover {
+            background: var(--bg);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-new { background: #DBEAFE; color: #1E40AF; }
+        .badge-screening { background: #FEF3C7; color: #92400E; }
+        .badge-interview { background: #E0E7FF; color: #3730A3; }
+        .badge-final { background: #FCE7F3; color: #831843; }
+        .badge-selected { background: #D1FAE5; color: #065F46; }
+        .badge-rejected { background: #FEE2E2; color: #991B1B; }
+        .badge-ready { background: #D1FAE5; color: #065F46; }
+        .badge-linkedin { background: #0077B5; color: white; }
+        .badge-naukri { background: #FF6B6B; color: white; }
+        .badge-referral { background: #10B981; color: white; }
+        .badge-career { background: #8B5CF6; color: white; }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-family: 'Archivo', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 0.25rem;
+            line-height: 1;
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .tab.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Candidate Card */
+        .candidate-card {
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .candidate-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .candidate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .candidate-name {
+            font-family: 'Archivo', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .candidate-role {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .candidate-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 0.75rem;
+        }
+
+        .candidate-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Rating */
+        .rating {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .star {
+            color: #D1D5DB;
+            font-size: 1.25rem;
+        }
+
+        .star.filled {
+            color: var(--accent);
+        }
+
+        /* Interview Stage Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.65rem;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--border);
+        }
+
+        .timeline-item.completed::before {
+            background: var(--success);
+        }
+
+        .timeline-item.current::before {
+            background: var(--accent);
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2);
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: -1.59rem;
+            top: 1.25rem;
+            width: 2px;
+            height: calc(100% - 1rem);
+            background: var(--border);
+        }
+
+        .timeline-item:last-child::after {
+            display: none;
+        }
+
+        .timeline-content {
+            background: var(--bg);
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .status-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin: -1rem 0 1.5rem;
+        }
+
+        .status-chip {
+            border: 1px solid var(--border);
+            background: #fff;
+            color: var(--text);
+            border-radius: 999px;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .status-chip.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        /* Search */
+        .search-box {
+            position: relative;
+            flex: 2;
+        }
+
+        .search-box input {
+            padding-left: 2.5rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Hide pages by default */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Utility Classes */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .flex { display: flex; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .gap-1 { gap: 0.5rem; }
+        .gap-2 { gap: 1rem; }
+
+        /* Upload Zone */
+        .upload-zone {
+            border: 3px dashed var(--border);
+            border-radius: 12px;
+            padding: 3rem;
+            text-align: center;
+            background: var(--bg);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtext {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* File List */
+        .file-list {
+            margin-top: 2rem;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+        }
+
+        .file-icon {
+            font-size: 2rem;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .file-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .file-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+
+        /* AI Search Box */
+        .ai-search-box {
+            background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+            padding: 2rem;
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .ai-search-box h3 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .ai-search-input {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .ai-search-input input {
+            flex: 1;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .ai-search-input button {
+            background: white;
+            color: #667EEA;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .ai-search-input button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .ai-example {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Match Score */
+        .match-score {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: white;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .match-score.high { background: linear-gradient(135deg, #10B981 0%, #059669 100%); }
+        .match-score.medium { background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); }
+        .match-score.low { background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); }
+
+        /* Interview Timeline */
+        .interview-timeline {
+            position: relative;
+            padding: 2rem;
+            background: var(--bg);
+            border-radius: 12px;
+        }
+
+        .timeline-header {
+            font-family: 'Archivo', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+
+        /* Google Meet Integration */
+        .meet-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: #4285F4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .meet-button:hover {
+            background: #357AE8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);
+        }
+
+        .meet-button::before {
+            content: '📹';
+            font-size: 1.2rem;
+        }
+
+        /* Email Communication Log */
+        .email-log {
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .email-log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 0.75rem;
+        }
+
+        .email-type {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .email-timestamp {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .email-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .email-status.sent { background: #D1FAE5; color: #065F46; }
+        .email-status.opened { background: #DBEAFE; color: #1E40AF; }
+        .email-status.replied { background: #FCE7F3; color: #831843; }
+        .email-status.bounced { background: #FEE2E2; color: #991B1B; }
+
+        .email-preview {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-top: 0.5rem;
+        }
+
+        /* JD Upload */
+        .jd-upload {
+            background: var(--bg);
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 1rem;
+        }
+
+        .jd-upload:hover {
+            border-color: var(--accent);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .jd-uploaded {
+            background: #D1FAE5;
+            border-color: #10B981;
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        /* Screening Results */
+        .screening-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+
+        .screening-card:hover {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            border-color: var(--accent);
+        }
+
+        .screening-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .screening-name {
+            font-family: 'Archivo', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .screening-skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .skill-tag {
+            padding: 0.35rem 0.75rem;
+            background: var(--bg);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .skill-tag.matched {
+            background: #D1FAE5;
+            color: #065F46;
+            border: 1px solid #10B981;
+        }
+
+        /* Email Templates Preview */
+        .email-preview {
+            background: #F9FAFB;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .email-preview-header {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav ul {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">Dutient<span>HRS</span></div>
+                <nav>
+                    <ul>
+                        <li><a href="#" data-page="dashboard" class="nav-link active">Dashboard</a></li>
+                        <li><a href="#" data-page="candidates" class="nav-link">Candidates</a></li>
+                        <li><a href="#" data-page="talent-pool" class="nav-link">Talent Pool</a></li>
+                        <li><a href="#" data-page="interviews" class="nav-link">Interviews</a></li>
+                        <li><a href="#" data-page="bulk-upload" class="nav-link">Bulk Upload</a></li>
+                        <li><a href="#" data-page="templates" class="nav-link">Templates</a></li>
+                        <li><a href="#" data-page="analytics" class="nav-link">Analytics</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page active">
+            <div class="page-header">
+                <h1 class="page-title">Dashboard</h1>
+                <p class="page-subtitle">Overview of your hiring pipeline and key metrics</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">23</div>
+                    <div class="stat-label">Active Candidates</div>
+                    <div class="stat-trend">↑ 12% from last week</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">Ready to Deploy</div>
+                    <div class="stat-trend">Target: 6 minimum</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">5</div>
+                    <div class="stat-label">Interviews Today</div>
+                    <div class="stat-trend">2 pending feedback</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">87%</div>
+                    <div class="stat-label">Selection Rate</div>
+                    <div class="stat-trend">↑ 5% improvement</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Pipeline Overview</h2>
+                    <button class="btn btn-primary btn-sm" onclick="showModal('addCandidateModal')">+ Add Candidate</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Stage</th>
+                                <th>Count</th>
+                                <th>Avg. Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="badge badge-new">New Applications</span></td>
+                                <td>8</td>
+                                <td>1.2 days</td>
+                                <td><button class="btn btn-secondary btn-sm" onclick="filterCandidates('New')">View</button></td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-screening">Screening</span></td>
+                                <td>5</td>
+                                <td>2.5 days</td>
+                                <td><button class="btn btn-secondary btn-sm" onclick="filterCandidates('Screening')">View</button></td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-interview">Interview</span></td>
+                                <td>6</td>
+                                <td>3.8 days</td>
+                                <td><button class="btn btn-secondary btn-sm" onclick="filterCandidates('Interview')">View</button></td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-final">Final Round</span></td>
+                                <td>4</td>
+                                <td>2.1 days</td>
+                                <td><button class="btn btn-secondary btn-sm" onclick="filterCandidates('Final Round')">View</button></td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-selected">Selected</span></td>
+                                <td>8</td>
+                                <td>-</td>
+                                <td><button class="btn btn-secondary btn-sm" onclick="navigateTo('talent-pool')">View Pool</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Recent Activity</h2>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item completed">
+                        <div class="timeline-content">
+                            <strong>Interview Completed</strong> - Sarah Johnson (Senior Developer)
+                            <div class="candidate-meta">
+                                <span class="candidate-meta-item">⭐ 4.5/5 Rating</span>
+                                <span class="candidate-meta-item">🕐 2 hours ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item current">
+                        <div class="timeline-content">
+                            <strong>Awaiting Final Round</strong> - Raj Kumar (DevOps Engineer)
+                            <div class="candidate-meta">
+                                <span class="candidate-meta-item">👤 Krishna/Rohit required</span>
+                                <span class="candidate-meta-item">🕐 5 hours ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <strong>New Application</strong> - Priya Sharma (UI/UX Designer)
+                            <div class="candidate-meta">
+                                <span class="badge badge-linkedin">LinkedIn</span>
+                                <span class="candidate-meta-item">🕐 1 day ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Candidates Page -->
+        <div id="candidates" class="page">
+            <div class="page-header flex-between">
+                <div>
+                    <h1 class="page-title">All Candidates</h1>
+                    <p class="page-subtitle">Manage and track all candidate applications</p>
+                </div>
+                <button class="btn btn-primary" onclick="showModal('addCandidateModal')">+ Add Candidate</button>
+            </div>
+
+            <!-- AI-Powered Search -->
+            <div class="ai-search-box">
+                <h3>🤖 AI-Powered Resume Search</h3>
+                <p style="margin-bottom: 1rem; opacity: 0.95;">Search resumes using natural language or upload a Job Description</p>
+                <div class="ai-search-input">
+                    <input type="text" id="aiSearchInput" placeholder="e.g., 'Find senior developers with 5+ years in React and Node.js who have worked in fintech'" style="color: var(--text);">
+                    <button onclick="performAISearch()">🔍 AI Search</button>
+                </div>
+                <div class="ai-example">
+                    <strong>Examples:</strong> "Python developers with ML experience" • "UI/UX designers from top companies" • "DevOps engineers who know Kubernetes"
+                </div>
+                <div class="mt-2">
+                    <div class="jd-upload" id="jdUploadZone" onclick="document.getElementById('jdFileInput').click()">
+                        <input type="file" id="jdFileInput" accept=".pdf,.docx,.txt" style="display: none;" onchange="handleJDUpload(event)">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📄</div>
+                        <div><strong>Upload Job Description</strong></div>
+                        <div style="font-size: 0.85rem; margin-top: 0.25rem; opacity: 0.8;">AI will match candidates to your JD (PDF, DOCX, TXT)</div>
+                    </div>
+                    <div id="jdUploadedInfo" style="display: none;" class="jd-uploaded">
+                        <div>
+                            <strong id="jdFileName"></strong>
+                            <div style="font-size: 0.85rem; color: #065F46; margin-top: 0.25rem;">✓ JD analyzed - showing matched candidates</div>
+                        </div>
+                        <button class="btn btn-sm btn-danger" onclick="clearJD()">Remove</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="candidateSearch" placeholder="Search by name, role, or skills..." oninput="searchCandidates()">
+                </div>
+                <div class="filter-group">
+                    <select id="jobFilter" onchange="filterCandidates()">
+                        <option value="">Select Job (Backend)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select id="statusFilter" onchange="filterCandidates()">
+                        <option value="">All Stages</option>
+                        <option value="Consider">Consider</option>
+                        <option value="Selected">Shortlisted</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Screening">Processing</option>
+                        <option value="New">New Application (Legacy)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select id="sourceFilter" onchange="filterCandidates()">
+                        <option value="">All Sources</option>
+                        <option value="LinkedIn">LinkedIn</option>
+                        <option value="Naukri">Naukri</option>
+                        <option value="Career Page">Career Page</option>
+                        <option value="Referral">Referral</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select id="roleFilter" onchange="filterCandidates()">
+                        <option value="">All Roles</option>
+                        <option value="Developer">Developer</option>
+                        <option value="Designer">Designer</option>
+                        <option value="DevOps">DevOps</option>
+                        <option value="Manager">Manager</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <button class="btn btn-secondary btn-sm" onclick="refreshJobsFromBackend().then(() => loadCandidates())">Sync Jobs</button>
+                </div>
+            </div>
+            <div class="status-chips" id="candidateStatusChips">
+                <button class="status-chip active" onclick="applyStatusChip('')">All</button>
+                <button class="status-chip" onclick="applyStatusChip('Selected')">Shortlisted</button>
+                <button class="status-chip" onclick="applyStatusChip('Consider')">Consider</button>
+                <button class="status-chip" onclick="applyStatusChip('Rejected')">Rejected</button>
+                <button class="status-chip" onclick="applyStatusChip('Screening')">Processing</button>
+            </div>
+
+            <div id="candidatesList">
+                <!-- Candidates will be dynamically loaded here -->
+            </div>
+        </div>
+
+        <!-- Talent Pool Page -->
+        <div id="talent-pool" class="page">
+            <div class="page-header flex-between">
+                <div>
+                    <h1 class="page-title">Ready-to-Deploy Talent Pool</h1>
+                    <p class="page-subtitle">Pre-vetted candidates available for immediate hiring</p>
+                </div>
+                <div>
+                    <span class="stat-value" style="font-size: 2rem; color: var(--success);">8/6</span>
+                    <span class="stat-label" style="color: var(--text-muted);">Ready candidates (Target: 6)</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Available Talent</h2>
+                </div>
+                <div id="talentPoolList">
+                    <!-- Talent pool candidates will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Interviews Page -->
+        <div id="interviews" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Interview Management</h1>
+                <p class="page-subtitle">Schedule interviews and capture structured feedback</p>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('scheduled')">Scheduled</button>
+                <button class="tab" onclick="switchTab('pending-feedback')">Pending Feedback</button>
+                <button class="tab" onclick="switchTab('completed')">Completed</button>
+            </div>
+
+            <div id="scheduled" class="tab-content active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Upcoming Interviews</h2>
+                        <button class="btn btn-primary btn-sm" onclick="showModal('scheduleInterviewModal')">+ Schedule Interview</button>
+                    </div>
+                    <div id="scheduledInterviews">
+                        <!-- Scheduled interviews will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="pending-feedback" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Awaiting Feedback</h2>
+                    </div>
+                    <div id="pendingFeedbackList">
+                        <!-- Pending feedback interviews will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="completed" class="tab-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Completed Interviews</h2>
+                    </div>
+                    <div id="completedInterviews">
+                        <!-- Completed interviews will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Upload Page -->
+        <div id="bulk-upload" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Bulk Resume Upload & AI Screening</h1>
+                <p class="page-subtitle">Upload multiple resumes and let AI screen candidates automatically</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Upload Resumes</h2>
+                    <div class="flex gap-2">
+                        <button class="btn btn-secondary btn-sm" onclick="document.getElementById('bulkResumeInput').click()">📁 Browse Files</button>
+                        <button class="btn btn-primary btn-sm" onclick="startBulkScreening()" id="startScreeningBtn" style="display: none;">🤖 Start AI Screening</button>
+                    </div>
+                </div>
+                
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('bulkResumeInput').click()">
+                    <div class="upload-icon">📤</div>
+                    <div class="upload-text">Drop PDF, DOCX, TXT, or MD resumes here</div>
+                    <div class="upload-subtext">or click to browse (supports multiple files)</div>
+                    <input type="file" id="bulkResumeInput" multiple accept=".pdf,.docx,.txt,.md" style="display: none;" onchange="handleBulkUpload(event)">
+                </div>
+
+                <div class="file-list" id="uploadedFilesList" style="display: none;">
+                    <h3 style="margin-bottom: 1rem;">Uploaded Files (<span id="fileCount">0</span>)</h3>
+                    <div id="fileItems"></div>
+                </div>
+            </div>
+
+            <div class="card" id="screeningOptionsCard" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">Screening Criteria (Optional)</h2>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Role Type</label>
+                        <select id="bulkScreeningRole">
+                            <option value="">Any Role</option>
+                            <option>Senior Developer</option>
+                            <option>UI/UX Designer</option>
+                            <option>DevOps Engineer</option>
+                            <option>Project Manager</option>
+                            <option>QA Engineer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Minimum Experience (years)</label>
+                        <input type="number" id="bulkMinExperience" min="0" max="30" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Required Skills (comma-separated)</label>
+                        <input type="text" id="bulkRequiredSkills" placeholder="e.g., JavaScript, React, Node.js">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Job Description</label>
+                    <textarea id="bulkJD" rows="4" placeholder="Paste job description here for better AI matching..."></textarea>
+                </div>
+            </div>
+
+            <div class="card" id="screeningResultsCard" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">Screening Results</h2>
+                    <div class="flex gap-2">
+                        <button class="btn btn-success btn-sm" onclick="approveAllShortlisted()">✓ Approve All Shortlisted</button>
+                        <button class="btn btn-secondary btn-sm" onclick="exportScreeningResults()">📥 Export Results</button>
+                    </div>
+                </div>
+                <div id="screeningResults"></div>
+            </div>
+        </div>
+
+        <!-- Templates Page -->
+        <div id="templates" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Email Templates</h1>
+                <p class="page-subtitle">Standardized communication templates for hiring workflow</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Template Library</h2>
+                    <button class="btn btn-primary btn-sm" onclick="showModal('createTemplateModal')">+ Create Template</button>
+                </div>
+
+                <div class="form-row mb-2">
+                    <div>
+                        <label>Template Type</label>
+                        <select id="templateType" onchange="loadTemplate()">
+                            <option value="rejection">Rejection Email</option>
+                            <option value="selection">Selection & Offer</option>
+                            <option value="interview-invite">Interview Invitation</option>
+                            <option value="status-update">Status Update</option>
+                            <option value="final-round">Final Round Invitation</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="email-preview" id="templatePreview">
+                    <!-- Template preview will be loaded here -->
+                </div>
+
+                <div class="mt-2">
+                    <button class="btn btn-secondary" onclick="editTemplate()">Edit Template</button>
+                    <button class="btn btn-primary" onclick="useTemplate()">Use Template</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Page -->
+        <div id="analytics" class="page">
+            <div class="page-header">
+                <h1 class="page-title">Analytics & Reports</h1>
+                <p class="page-subtitle">Insights into your hiring process performance</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">15.2</div>
+                    <div class="stat-label">Days Avg. Time to Hire</div>
+                    <div class="stat-trend">↓ 3 days from last month</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">42%</div>
+                    <div class="stat-label">Offer Acceptance Rate</div>
+                    <div class="stat-trend">↑ 8% improvement</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">156</div>
+                    <div class="stat-label">Total Applications</div>
+                    <div class="stat-trend">This quarter</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">4.2</div>
+                    <div class="stat-label">Avg. Interview Rating</div>
+                    <div class="stat-trend">Out of 5</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Source Performance</h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Source</th>
+                            <th>Applications</th>
+                            <th>Interviews</th>
+                            <th>Hired</th>
+                            <th>Conversion Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge badge-linkedin">LinkedIn</span></td>
+                            <td>68</td>
+                            <td>24</td>
+                            <td>8</td>
+                            <td>11.8%</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-naukri">Naukri</span></td>
+                            <td>52</td>
+                            <td>18</td>
+                            <td>5</td>
+                            <td>9.6%</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-career">Career Page</span></td>
+                            <td>24</td>
+                            <td>12</td>
+                            <td>6</td>
+                            <td>25%</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-referral">Referral</span></td>
+                            <td>12</td>
+                            <td>10</td>
+                            <td>7</td>
+                            <td>58.3%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Role-wise Pipeline</h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Role</th>
+                            <th>Active</th>
+                            <th>In Pool</th>
+                            <th>Avg. Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Senior Developer</td>
+                            <td>8</td>
+                            <td>3</td>
+                            <td>4.3/5</td>
+                        </tr>
+                        <tr>
+                            <td>UI/UX Designer</td>
+                            <td>5</td>
+                            <td>2</td>
+                            <td>4.5/5</td>
+                        </tr>
+                        <tr>
+                            <td>DevOps Engineer</td>
+                            <td>4</td>
+                            <td>1</td>
+                            <td>4.1/5</td>
+                        </tr>
+                        <tr>
+                            <td>Project Manager</td>
+                            <td>6</td>
+                            <td>2</td>
+                            <td>4.4/5</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <!-- Add Candidate Modal -->
+    <div id="addCandidateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add New Candidate</h2>
+                <button class="close-modal" onclick="closeModal('addCandidateModal')">×</button>
+            </div>
+            <form id="addCandidateForm" onsubmit="addCandidate(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel">
+                    </div>
+                    <div class="form-group">
+                        <label>Role Applied For *</label>
+                        <select required>
+                            <option value="">Select Role</option>
+                            <option>Senior Developer</option>
+                            <option>UI/UX Designer</option>
+                            <option>DevOps Engineer</option>
+                            <option>Project Manager</option>
+                            <option>QA Engineer</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Source *</label>
+                        <select required>
+                            <option value="">Select Source</option>
+                            <option>LinkedIn</option>
+                            <option>Naukri</option>
+                            <option>Career Page</option>
+                            <option>Referral</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Experience (years)</label>
+                        <input type="number" min="0" max="30">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Skills</label>
+                    <input type="text" placeholder="e.g., JavaScript, React, Node.js (comma separated)">
+                </div>
+                <div class="form-group">
+                    <label>Resume/CV Link</label>
+                    <input type="url" placeholder="https://">
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea placeholder="Additional information about the candidate..."></textarea>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addCandidateModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Candidate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Interview Feedback Modal -->
+    <div id="feedbackModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Interview Feedback</h2>
+                <button class="close-modal" onclick="closeModal('feedbackModal')">×</button>
+            </div>
+            <form id="feedbackForm" onsubmit="submitFeedback(event)">
+                <div class="form-group">
+                    <label>Candidate Name</label>
+                    <input type="text" id="feedbackCandidateName" readonly>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Interview Round *</label>
+                        <select required>
+                            <option>Initial Screening</option>
+                            <option>Technical Round 1</option>
+                            <option>Technical Round 2</option>
+                            <option>Manager Round</option>
+                            <option>Final Round (Krishna/Rohit)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Interviewer *</label>
+                        <input type="text" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Overall Rating *</label>
+                        <select required>
+                            <option value="">Select Rating</option>
+                            <option value="5">⭐⭐⭐⭐⭐ Exceptional</option>
+                            <option value="4">⭐⭐⭐⭐ Strong</option>
+                            <option value="3">⭐⭐⭐ Good</option>
+                            <option value="2">⭐⭐ Average</option>
+                            <option value="1">⭐ Below Expectations</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Recommendation *</label>
+                        <select required>
+                            <option value="">Select</option>
+                            <option>Strong Yes - Move Forward</option>
+                            <option>Yes - Move Forward</option>
+                            <option>Maybe - Need More Info</option>
+                            <option>No - Reject</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Technical Skills Assessment</label>
+                    <textarea placeholder="Evaluate technical competencies, problem-solving abilities..." rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Communication & Cultural Fit</label>
+                    <textarea placeholder="Assess communication skills, team compatibility, cultural alignment..." rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Strengths</label>
+                    <textarea placeholder="What did the candidate excel at?" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Areas of Concern</label>
+                    <textarea placeholder="Any concerns or red flags?" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Additional Comments</label>
+                    <textarea placeholder="Any other observations or notes..." rows="2"></textarea>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('feedbackModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Candidate Modal -->
+    <div id="viewCandidateModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="viewCandidateName">Candidate Details</h2>
+                <button class="close-modal" onclick="closeModal('viewCandidateModal')">×</button>
+            </div>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="switchCandidateTab('details')">Profile</button>
+                <button class="tab" onclick="switchCandidateTab('timeline')">Interview Timeline</button>
+                <button class="tab" onclick="switchCandidateTab('emails')">Email Communication</button>
+            </div>
+
+            <div id="candidate-details-tab" class="tab-content active">
+                <div id="candidateDetailsContent"></div>
+            </div>
+
+            <div id="candidate-timeline-tab" class="tab-content">
+                <div class="interview-timeline">
+                    <div class="timeline-header">Interview Journey</div>
+                    <div class="timeline" id="candidateTimelineContent">
+                        <!-- Timeline will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="candidate-emails-tab" class="tab-content">
+                <div class="flex-between mb-2">
+                    <h3>Email Communication History</h3>
+                    <button class="btn btn-primary btn-sm" onclick="showModal('sendEmailModal')">✉️ Send Email</button>
+                </div>
+                <div id="candidateEmailsContent">
+                    <!-- Email history will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Send Email Modal -->
+    <div id="sendEmailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Send Email to Candidate</h2>
+                <button class="close-modal" onclick="closeModal('sendEmailModal')">×</button>
+            </div>
+            <form id="sendEmailForm" onsubmit="sendCandidateEmail(event)">
+                <div class="form-group">
+                    <label>Email Type *</label>
+                    <select id="emailType" required onchange="loadEmailTemplate()">
+                        <option value="">Select Type</option>
+                        <option value="interview-invite">Interview Invitation</option>
+                        <option value="status-update">Status Update</option>
+                        <option value="final-round">Final Round Invitation</option>
+                        <option value="selection">Selection & Offer</option>
+                        <option value="rejection">Rejection</option>
+                        <option value="custom">Custom Email</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>To</label>
+                    <input type="email" id="emailTo" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Subject *</label>
+                    <input type="text" id="emailSubject" required>
+                </div>
+                <div class="form-group">
+                    <label>Message *</label>
+                    <textarea id="emailBody" rows="10" required></textarea>
+                </div>
+                <div class="form-group" id="meetLinkGroup" style="display: none;">
+                    <label>Google Meet Link</label>
+                    <div class="flex gap-2">
+                        <input type="url" id="meetLink" placeholder="https://meet.google.com/xxx-xxxx-xxx">
+                        <button type="button" class="meet-button" onclick="generateMeetLink()">Generate Meet Link</button>
+                    </div>
+                </div>
+                <div class="form-group" style="background: #FEF3C7; padding: 1rem; border-radius: 8px; border-left: 4px solid #F59E0B;">
+                    <strong>📧 Email Tracking Enabled</strong>
+                    <div style="font-size: 0.9rem; margin-top: 0.5rem; color: #92400E;">
+                        This email will be tracked for opens and responses. You'll see the status in the communication history.
+                    </div>
+                </div>
+                <div class="flex gap-2 mt-2">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('sendEmailModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">📤 Send Email</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+        <script src="frontend/js/01-state.js"></script>
+    <script src="frontend/js/02-core-ui.js"></script>
+    <script src="frontend/js/03-candidates.js"></script>
+    <script src="frontend/js/04-bulk-screening.js"></script>
+    <script src="frontend/js/05-search-tabs.js"></script>
+    <script src="frontend/js/06-email-init.js"></script>
+</body>
+</html>
+
