@@ -184,7 +184,6 @@ API Docs:
 
 ## Author
 
-- Primary Author: Het Bhutak
+- Primary Author: @Het Bhutak(https://github.com/Hettbhutak)
 - Project: Dutient HR Resume Screening System
 
-If you want multiple contributors listed, add a `Contributors` section with names and roles.
