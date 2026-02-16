@@ -1,7 +1,7 @@
 # Dutient HR Resume Screening System
 
 End-to-end HR screening system with:
-- Frontend dashboard (`dutient-hrs (1).html` + modular JS)
+- Frontend dashboard (`frontend/index.html` + modular JS)
 - Python backend API (FastAPI)
 - Bulk resume upload, parsing, scoring, ranking, shortlist workflow
 - SQLite persistence + resume file storage
@@ -10,7 +10,6 @@ End-to-end HR screening system with:
 
 ```text
 Dutient.ai/
-  dutient-hrs (1).html          # Main UI
   backend/
     app/
       main.py                   # FastAPI routes
@@ -25,6 +24,7 @@ Dutient.ai/
     .env.example
     README.md
   frontend/
+    index.html                # Main UI
     js/
       01-state.js               # Global state, sample data, templates
       02-core-ui.js             # Navigation, modal, shared helpers
@@ -57,7 +57,7 @@ Dutient.ai/
 ## Architecture
 
 ### 1. Frontend Layer
-- Single-page HR dashboard (`dutient-hrs (1).html`)
+- Single-page HR dashboard (`frontend/index.html`)
 - Modular JS under `frontend/js`
 - Calls backend REST APIs directly via `fetch`
 
@@ -132,7 +132,7 @@ API Docs:
 ## Frontend Launch
 
 - Serve project via local web server (recommended: Live Server)
-- Open: `dutient-hrs (1).html`
+- Open: `frontend/index.html`
 - Ensure backend is running at: `http://127.0.0.1:8000`
 
 ## Typical User Flow
@@ -187,4 +187,6 @@ API Docs:
 - Primary Author: Het Bhutak(https://github.com/Hettbhutak)
 - Email:hetbhutak@gmail.com
 - Project: Dutient HR Resume Screening System
+
+
 

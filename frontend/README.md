@@ -17,7 +17,7 @@ This frontend is split into feature files under `frontend/js` for easier debuggi
 
 ## Load Order
 
-Scripts are loaded in this order from `dutient-hrs (1).html` and depend on globals from earlier files:
+Scripts are loaded in this order from `frontend/index.html` and depend on globals from earlier files:
 
 1. `01-state.js`
 2. `02-core-ui.js`
@@ -27,3 +27,4 @@ Scripts are loaded in this order from `dutient-hrs (1).html` and depend on globa
 6. `06-email-init.js`
 
 Keep this order unless you convert the project to ES modules.
+
