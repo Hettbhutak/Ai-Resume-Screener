@@ -715,4 +715,3 @@
                 alert(`Could not schedule interview: ${error.message}`);
             }
         }
-
