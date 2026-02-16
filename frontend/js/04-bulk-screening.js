@@ -130,7 +130,9 @@
                 recommendation: candidate.recommendation || 'Pending',
                 matchedSkills: candidate.skills || [],
                 fileName: candidate.file_name,
-                matchReasons: candidate.match_reasons || []
+                matchReasons: candidate.match_reasons || [],
+                timeline: candidate.interview_timeline || [],
+                emails: candidate.email_logs || []
             }));
             displayScreeningResults();
         }

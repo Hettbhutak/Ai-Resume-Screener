@@ -1,7 +1,123 @@
+        function upsertBackendCandidateFromApi(apiCandidate) {
+            const mapped = {
+                id: apiCandidate.id,
+                jobId: apiCandidate.job_id,
+                name: apiCandidate.full_name || apiCandidate.file_name,
+                role: apiCandidate.role || 'Unknown Role',
+                email: apiCandidate.email || 'Not found',
+                phone: apiCandidate.phone || 'Not found',
+                experience: apiCandidate.experience_years || 0,
+                skills: apiCandidate.skills || [],
+                recommendation: apiCandidate.recommendation || 'Pending',
+                score: apiCandidate.final_score || 0,
+                semanticScore: apiCandidate.semantic_score || 0,
+                mustHaveScore: apiCandidate.must_have_score || 0,
+                niceToHaveScore: apiCandidate.nice_to_have_score || 0,
+                status: apiCandidate.status || 'completed',
+                fileName: apiCandidate.file_name,
+                matchReasons: apiCandidate.match_reasons || [],
+                timeline: apiCandidate.interview_timeline || [],
+                emails: apiCandidate.email_logs || [],
+                source: 'Bulk Upload'
+            };
+
+            const idx = backendCandidatesCache.findIndex(c => c.id === mapped.id && c.jobId === mapped.jobId);
+            if (idx >= 0) backendCandidatesCache[idx] = mapped;
+            else backendCandidatesCache.push(mapped);
+            return mapped;
+        }
+
+        async function refreshCurrentCandidateFromBackend() {
+            if (!currentViewingJobId || !currentViewingCandidate) return null;
+            const apiCandidate = await apiRequest(`/jobs/${currentViewingJobId}/candidates/${currentViewingCandidate}`);
+            return upsertBackendCandidateFromApi(apiCandidate);
+        }
+
+        async function scheduleInterviewForCurrentCandidate() {
+            if (!currentViewingJobId || !currentViewingCandidate) {
+                alert('Schedule interview is available for backend candidates only.');
+                return;
+            }
+
+            const roundName = prompt('Interview round (e.g., Technical Round 1):', 'Technical Round');
+            if (!roundName) return;
+            const date = prompt('Interview date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+            if (!date) return;
+            const time = prompt('Interview time (e.g., 2:00 PM):', '2:00 PM');
+            if (!time) return;
+            const interviewer = prompt('Interviewer name:', 'Hiring Team') || 'Hiring Team';
+            const mode = prompt('Mode (Video Call / In-Person):', 'Video Call') || 'Video Call';
+            const duration = Number(prompt('Duration in minutes:', '45') || '45');
+            const notes = prompt('Notes (optional):', '') || '';
+            const meetLink = prompt('Meeting link (optional):', '') || '';
+
+            try {
+                await apiRequest(`/jobs/${currentViewingJobId}/candidates/${currentViewingCandidate}/interviews`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        round_name: roundName,
+                        date,
+                        time,
+                        mode,
+                        interviewer,
+                        duration_minutes: isNaN(duration) ? 45 : duration,
+                        notes,
+                        meet_link: meetLink
+                    })
+                });
+
+                await refreshCurrentCandidateFromBackend();
+                loadCandidateTimeline(currentViewingCandidate);
+                alert('Interview scheduled successfully.');
+            } catch (error) {
+                alert(`Could not schedule interview: ${error.message}`);
+            }
+        }
+
+        async function sendSelectionDecisionEmail(outcome) {
+            if (!currentViewingJobId || !currentViewingCandidate) {
+                alert('Status email is available for backend candidates only.');
+                return;
+            }
+
+            const isSelected = outcome === 'selected';
+            const defaultSubject = isSelected
+                ? 'Congratulations! You are selected'
+                : 'Update on your application';
+            const defaultMessage = isSelected
+                ? 'We are pleased to inform you that you have been selected. Our team will contact you with next steps.'
+                : 'Thank you for your interest. At this time, we are moving ahead with other candidates.';
+
+            const subject = prompt('Email subject:', defaultSubject);
+            if (!subject) return;
+            const message = prompt('Email message:', defaultMessage);
+            if (!message) return;
+
+            try {
+                await apiRequest(`/jobs/${currentViewingJobId}/candidates/${currentViewingCandidate}/emails/status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        outcome,
+                        subject,
+                        message
+                    })
+                });
+
+                await refreshCurrentCandidateFromBackend();
+                loadCandidateEmails(currentViewingCandidate);
+                filterCandidates();
+                alert('Status email sent and logged.');
+            } catch (error) {
+                alert(`Could not send status email: ${error.message}`);
+            }
+        }
+
         // Email Functions
         function prepareEmail(candidateId) {
             currentViewingCandidate = candidateId;
-            const candidate = candidates.find(c => c.id === candidateId);
+            const candidate = backendCandidatesCache.find(c => c.id === candidateId) || candidates.find(c => c.id === candidateId);
             if (candidate) {
                 document.getElementById('emailTo').value = candidate.email;
             }
@@ -20,7 +136,7 @@
             };
 
             if (currentViewingCandidate) {
-                const candidate = candidates.find(c => c.id === currentViewingCandidate);
+                const candidate = backendCandidatesCache.find(c => c.id === currentViewingCandidate) || candidates.find(c => c.id === currentViewingCandidate);
                 if (candidate) {
                     if (!candidate.emails) candidate.emails = [];
                     candidate.emails.push({
