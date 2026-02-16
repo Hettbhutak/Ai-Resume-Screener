@@ -43,6 +43,8 @@ class CandidateResume(Base):
     final_score: Mapped[float] = mapped_column(Float, default=0.0)
     recommendation: Mapped[str] = mapped_column(String(50), default="Pending")
     match_reasons: Mapped[str] = mapped_column(Text, default="")
+    interview_timeline: Mapped[str] = mapped_column(Text, default="[]")
+    email_logs: Mapped[str] = mapped_column(Text, default="[]")
 
     extracted_text: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

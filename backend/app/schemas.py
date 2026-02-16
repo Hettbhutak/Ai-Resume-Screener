@@ -40,11 +40,30 @@ class CandidateResponse(BaseModel):
     final_score: float
     recommendation: str
     match_reasons: list[str]
+    interview_timeline: list[dict] = Field(default_factory=list)
+    email_logs: list[dict] = Field(default_factory=list)
 
 
 class CandidateUpdate(BaseModel):
     recommendation: str | None = None
     status: str | None = None
+
+
+class InterviewScheduleCreate(BaseModel):
+    round_name: str = Field(min_length=2, max_length=100)
+    date: str = Field(min_length=8, max_length=30)
+    time: str = Field(min_length=1, max_length=30)
+    mode: str = Field(default="Video Call", max_length=50)
+    interviewer: str = Field(default="", max_length=100)
+    duration_minutes: int = 45
+    notes: str = ""
+    meet_link: str = ""
+
+
+class CandidateStatusEmailCreate(BaseModel):
+    outcome: str = Field(pattern="^(selected|not_selected)$")
+    subject: str | None = None
+    message: str | None = None
 
 
 class UploadResponse(BaseModel):

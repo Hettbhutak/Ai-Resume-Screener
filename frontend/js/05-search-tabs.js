@@ -112,19 +112,37 @@
             }
         }
 
+        function getCurrentModalCandidate(candidateId) {
+            const backendCandidate = backendCandidatesCache.find(c => c.id === candidateId);
+            if (backendCandidate) return backendCandidate;
+            return candidates.find(c => c.id === candidateId);
+        }
+
         function loadCandidateTimeline(candidateId) {
-            const candidate = candidates.find(c => c.id === candidateId);
-            if (!candidate || !candidate.timeline) return;
+            const candidate = getCurrentModalCandidate(candidateId);
+            if (!candidate) return;
+            const timelineItems = candidate.timeline || [];
 
             const container = document.getElementById('candidateTimelineContent');
-            container.innerHTML = candidate.timeline.map(item => `
+            if (timelineItems.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                        No interview steps yet. Use "Schedule Interview" to add one.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = timelineItems.map(item => `
                 <div class="timeline-item ${item.status}">
                     <div class="timeline-content">
                         <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
                             <strong>${item.stage}</strong>
-                            <span style="font-size: 0.85rem; color: var(--text-muted);">${new Date(item.date).toLocaleDateString()}</span>
+                            <span style="font-size: 0.85rem; color: var(--text-muted);">${item.date ? new Date(item.date).toLocaleDateString() : ''} ${item.time ? item.time : ''}</span>
                         </div>
                         ${item.interviewer ? `<div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">👤 Interviewer: ${item.interviewer}</div>` : ''}
+                        ${item.mode ? `<div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">💻 Mode: ${item.mode}</div>` : ''}
+                        ${item.duration ? `<div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.5rem;">🕐 Duration: ${item.duration}</div>` : ''}
                         ${item.rating ? `
                             <div class="rating" style="margin-bottom: 0.5rem;">
                                 ${[1,2,3,4,5].map(i => `<span class="star ${i <= item.rating ? 'filled' : ''}">★</span>`).join('')}
@@ -143,12 +161,13 @@
         }
 
         function loadCandidateEmails(candidateId) {
-            const candidate = candidates.find(c => c.id === candidateId);
-            if (!candidate || !candidate.emails) return;
+            const candidate = getCurrentModalCandidate(candidateId);
+            if (!candidate) return;
+            const emailItems = candidate.emails || [];
 
             const container = document.getElementById('candidateEmailsContent');
             
-            if (candidate.emails.length === 0) {
+            if (emailItems.length === 0) {
                 container.innerHTML = `
                     <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
                         <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
@@ -159,7 +178,7 @@
                 return;
             }
 
-            container.innerHTML = candidate.emails.map(email => `
+            container.innerHTML = emailItems.map(email => `
                 <div class="email-log">
                     <div class="email-log-header">
                         <div>

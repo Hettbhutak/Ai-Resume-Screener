@@ -186,6 +186,7 @@
         let uploadedFiles = [];
         let screeningResults = [];
         let currentViewingCandidate = null;
+        let currentViewingJobId = null;
         let activeScreeningJobId = null;
         let screeningPollTimer = null;
         let backendJobs = [];

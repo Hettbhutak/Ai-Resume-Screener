@@ -1254,7 +1254,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">Upcoming Interviews</h2>
-                        <button class="btn btn-primary btn-sm" onclick="showModal('scheduleInterviewModal')">+ Schedule Interview</button>
+                        <button class="btn btn-primary btn-sm" onclick="scheduleInterviewFromInterviewsTab()">+ Schedule Interview</button>
                     </div>
                     <div id="scheduledInterviews">
                         <!-- Scheduled interviews will be loaded here -->
@@ -1687,7 +1687,10 @@
 
             <div id="candidate-timeline-tab" class="tab-content">
                 <div class="interview-timeline">
-                    <div class="timeline-header">Interview Journey</div>
+                    <div class="flex-between mb-1">
+                        <div class="timeline-header" style="margin: 0;">Interview Journey</div>
+                        <button class="btn btn-primary btn-sm" onclick="scheduleInterviewForCurrentCandidate()">+ Schedule Interview</button>
+                    </div>
                     <div class="timeline" id="candidateTimelineContent">
                         <!-- Timeline will be loaded here -->
                     </div>
@@ -1697,7 +1700,11 @@
             <div id="candidate-emails-tab" class="tab-content">
                 <div class="flex-between mb-2">
                     <h3>Email Communication History</h3>
-                    <button class="btn btn-primary btn-sm" onclick="showModal('sendEmailModal')">✉️ Send Email</button>
+                    <div class="flex gap-2">
+                        <button class="btn btn-success btn-sm" onclick="sendSelectionDecisionEmail('selected')">✅ Send Selected</button>
+                        <button class="btn btn-danger btn-sm" onclick="sendSelectionDecisionEmail('not_selected')">❌ Send Rejection</button>
+                        <button class="btn btn-primary btn-sm" onclick="showModal('sendEmailModal')">✉️ Send Email</button>
+                    </div>
                 </div>
                 <div id="candidateEmailsContent">
                     <!-- Email history will be loaded here -->

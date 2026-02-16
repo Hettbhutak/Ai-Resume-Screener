@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session  # type: ignore
 
 from . import models
 from .parsing import extract_text

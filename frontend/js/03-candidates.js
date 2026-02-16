@@ -23,6 +23,8 @@
                         status: c.status || 'completed',
                         fileName: c.file_name,
                         matchReasons: c.match_reasons || [],
+                        timeline: c.interview_timeline || [],
+                        emails: c.email_logs || [],
                         source: 'Bulk Upload'
                     }));
 
@@ -325,6 +327,7 @@
             if (!candidate) return;
             
             currentViewingCandidate = id;
+            currentViewingJobId = backendCandidate ? backendCandidate.jobId : null;
             document.getElementById('viewCandidateName').textContent = candidate.name;
             document.getElementById('emailTo').value = candidate.email;
             
@@ -442,52 +445,274 @@
             alert(`Edit candidate ID: ${id}. In production, this would show an edit form.`);
         }
 
-        function loadInterviews() {
-            // Sample interviews data
-            const scheduledContainer = document.getElementById('scheduledInterviews');
-            scheduledContainer.innerHTML = `
-                <div class="candidate-card">
-                    <div class="candidate-header">
-                        <div>
-                            <div class="candidate-name">Sarah Johnson - Technical Round 2</div>
-                            <div class="candidate-role">Senior Developer</div>
-                        </div>
-                        <div>
-                            <span class="badge badge-interview">Today, 2:00 PM</span>
-                        </div>
-                    </div>
-                    <div class="candidate-meta">
-                        <span class="candidate-meta-item">👤 Interviewer: Rahul Mehta</span>
-                        <span class="candidate-meta-item">🕐 Duration: 60 min</span>
-                        <span class="candidate-meta-item">💻 Mode: Video Call</span>
-                    </div>
-                    <div class="action-buttons mt-2">
-                        <button class="btn btn-sm btn-primary">Join Meeting</button>
-                        <button class="btn btn-sm btn-secondary">Reschedule</button>
-                    </div>
-                </div>
-            `;
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
 
-            const pendingContainer = document.getElementById('pendingFeedbackList');
-            pendingContainer.innerHTML = `
+        function normalizeRecommendation(recommendation) {
+            const rec = String(recommendation || '').toLowerCase();
+            if (rec === 'shortlist') return 'Shortlist';
+            if (rec === 'reject') return 'Reject';
+            if (rec === 'consider') return 'Consider';
+            return 'Pending';
+        }
+
+        function formatInterviewDateTime(dateText, timeText) {
+            if (!dateText) return 'Date TBD';
+            const dateOnly = String(dateText).split('T')[0];
+            const today = new Date();
+            const todayText = today.toISOString().split('T')[0];
+            const dateLabel = dateOnly === todayText
+                ? 'Today'
+                : new Date(dateOnly).toLocaleDateString();
+            return `${dateLabel}${timeText ? `, ${timeText}` : ''}`;
+        }
+
+        function isInterviewTimelineItem(item) {
+            const stage = String(item?.stage || '').toLowerCase();
+            return stage.includes('interview') || !!item?.interviewer || !!item?.time || !!item?.mode || !!item?.meetLink;
+        }
+
+        function extractInterviewEntries(candidate) {
+            const entries = [];
+            const timeline = candidate.timeline || [];
+            timeline.forEach(item => {
+                if (!isInterviewTimelineItem(item)) return;
+                const stage = String(item.stage || 'Interview');
+                entries.push({
+                    candidateId: candidate.id,
+                    jobId: candidate.jobId,
+                    name: candidate.name || 'Candidate',
+                    role: candidate.role || 'Role not specified',
+                    stage,
+                    round: stage.replace(/^Interview Scheduled -\s*/i, ''),
+                    date: item.date || '',
+                    time: item.time || '',
+                    interviewer: item.interviewer || 'TBD',
+                    duration: item.duration || '',
+                    mode: item.mode || 'Not specified',
+                    meetLink: item.meetLink || '',
+                    timelineStatus: String(item.status || '').toLowerCase(),
+                    recommendation: normalizeRecommendation(candidate.recommendation)
+                });
+            });
+            return entries;
+        }
+
+        function interviewSortValue(entry) {
+            const baseDate = entry.date ? entry.date : '9999-12-31';
+            return `${baseDate} ${entry.time || ''}`.trim();
+        }
+
+        function buildInterviewCard(entry, section) {
+            const statusBadge = section === 'scheduled'
+                ? `<span class="badge badge-interview">${escapeHtml(formatInterviewDateTime(entry.date, entry.time))}</span>`
+                : section === 'pending'
+                    ? '<span class="badge badge-warning">Feedback Pending</span>'
+                    : `<span class="badge ${entry.recommendation === 'Shortlist' ? 'badge-selected' : entry.recommendation === 'Reject' ? 'badge-rejected' : 'badge-success'}">${escapeHtml(entry.recommendation)}</span>`;
+
+            const decisionActions = !entry.jobId
+                ? ''
+                : entry.recommendation === 'Shortlist' || entry.recommendation === 'Reject'
+                ? `<button class="btn btn-sm btn-secondary" disabled>${entry.recommendation}</button>`
+                : `
+                    <button class="btn btn-sm btn-success" onclick="setInterviewDecision(${entry.jobId}, ${entry.candidateId}, 'Shortlist')">Select</button>
+                    <button class="btn btn-sm btn-danger" onclick="setInterviewDecision(${entry.jobId}, ${entry.candidateId}, 'Reject')">Reject</button>
+                `;
+
+            const joinButton = entry.meetLink
+                ? `<a class="btn btn-sm btn-primary" href="${escapeHtml(entry.meetLink)}" target="_blank" rel="noopener noreferrer">Join Meeting</a>`
+                : '<button class="btn btn-sm btn-secondary" disabled>No Meeting Link</button>';
+
+            return `
                 <div class="candidate-card">
                     <div class="candidate-header">
                         <div>
-                            <div class="candidate-name">Raj Kumar - Manager Round</div>
-                            <div class="candidate-role">DevOps Engineer</div>
+                            <div class="candidate-name">${escapeHtml(entry.name)} - ${escapeHtml(entry.round)}</div>
+                            <div class="candidate-role">${escapeHtml(entry.role)}</div>
                         </div>
-                        <div>
-                            <span class="badge badge-warning">Feedback Pending</span>
-                        </div>
+                        <div>${statusBadge}</div>
                     </div>
                     <div class="candidate-meta">
-                        <span class="candidate-meta-item">👤 Interviewer: Priya Joshi</span>
-                        <span class="candidate-meta-item">📅 Completed: 2 hours ago</span>
+                        <span class="candidate-meta-item">Interviewer: ${escapeHtml(entry.interviewer)}</span>
+                        <span class="candidate-meta-item">Duration: ${escapeHtml(entry.duration || 'TBD')}</span>
+                        <span class="candidate-meta-item">Mode: ${escapeHtml(entry.mode)}</span>
+                        <span class="candidate-meta-item">Date: ${escapeHtml(formatInterviewDateTime(entry.date, entry.time))}</span>
+                        ${entry.jobId ? `<span class="badge badge-screening">Job #${escapeHtml(entry.jobId)}</span>` : ''}
                     </div>
                     <div class="action-buttons mt-2">
-                        <button class="btn btn-sm btn-primary" onclick="showModal('feedbackModal')">Add Feedback</button>
+                        ${section === 'scheduled' ? joinButton : ''}
+                        <button class="btn btn-sm btn-secondary" onclick="viewCandidate(${entry.candidateId})">View Candidate</button>
+                        ${decisionActions}
                     </div>
                 </div>
             `;
+        }
+
+        function renderInterviewSection(containerId, entries, section) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            if (!entries.length) {
+                const emptyMessage = section === 'scheduled'
+                    ? 'No scheduled interviews yet.'
+                    : section === 'pending'
+                        ? 'No interviews pending feedback.'
+                        : 'No completed interview decisions yet.';
+                container.innerHTML = `
+                    <div class="candidate-card" style="text-align: center;">
+                        <div class="candidate-role">${emptyMessage}</div>
+                    </div>
+                `;
+                return;
+            }
+            container.innerHTML = entries.map(item => buildInterviewCard(item, section)).join('');
+        }
+
+        async function loadInterviews() {
+            renderInterviewSection('scheduledInterviews', [], 'scheduled');
+            renderInterviewSection('pendingFeedbackList', [], 'pending');
+            renderInterviewSection('completedInterviews', [], 'completed');
+
+            let candidatePool = [];
+            try {
+                await refreshJobsFromBackend();
+                if (backendJobs.length > 0) {
+                    const allJobCandidates = await Promise.all(
+                        backendJobs.map(job => apiRequest(`/jobs/${job.id}/candidates?sort=latest`))
+                    );
+                    candidatePool = allJobCandidates.flat().map(c => ({
+                        id: c.id,
+                        jobId: c.job_id,
+                        name: c.full_name || c.file_name,
+                        role: c.role || 'Unknown Role',
+                        email: c.email || 'Not found',
+                        phone: c.phone || 'Not found',
+                        experience: c.experience_years || 0,
+                        skills: c.skills || [],
+                        recommendation: c.recommendation || 'Pending',
+                        score: c.final_score || 0,
+                        semanticScore: c.semantic_score || 0,
+                        mustHaveScore: c.must_have_score || 0,
+                        niceToHaveScore: c.nice_to_have_score || 0,
+                        status: c.status || 'completed',
+                        fileName: c.file_name,
+                        matchReasons: c.match_reasons || [],
+                        timeline: c.interview_timeline || [],
+                        emails: c.email_logs || [],
+                        source: 'Bulk Upload'
+                    }));
+                    backendCandidatesCache = candidatePool;
+                }
+            } catch (error) {
+                console.error('Could not load interviews from backend:', error);
+            }
+
+            if (candidatePool.length === 0) {
+                candidatePool = (backendCandidatesCache || []).length > 0 ? backendCandidatesCache : candidates;
+            }
+
+            const interviewEntries = candidatePool
+                .flatMap(candidate => extractInterviewEntries(candidate))
+                .sort((a, b) => interviewSortValue(a).localeCompare(interviewSortValue(b)));
+
+            const scheduled = interviewEntries.filter(i => i.timelineStatus !== 'completed');
+            const pendingFeedback = interviewEntries.filter(i => i.timelineStatus === 'completed' && i.recommendation === 'Pending');
+            const completed = interviewEntries.filter(i => i.timelineStatus === 'completed' && i.recommendation !== 'Pending');
+
+            renderInterviewSection('scheduledInterviews', scheduled, 'scheduled');
+            renderInterviewSection('pendingFeedbackList', pendingFeedback, 'pending');
+            renderInterviewSection('completedInterviews', completed, 'completed');
+        }
+
+        async function setInterviewDecision(jobId, candidateId, decision) {
+            try {
+                const updated = await updateBackendCandidate(jobId, candidateId, decision);
+                if (typeof upsertBackendCandidateFromApi === 'function') {
+                    upsertBackendCandidateFromApi(updated);
+                }
+                await loadInterviews();
+                alert(`Candidate marked as ${decision}.`);
+            } catch (error) {
+                alert(`Could not update candidate decision: ${error.message}`);
+            }
+        }
+
+        async function scheduleInterviewFromInterviewsTab() {
+            try {
+                await refreshJobsFromBackend();
+                if (!backendJobs || backendJobs.length === 0) {
+                    alert('No jobs found. Create or sync jobs first.');
+                    return;
+                }
+
+                const jobPrompt = backendJobs
+                    .map(job => `${job.id}: ${job.title}`)
+                    .join('\n');
+                const jobIdInput = prompt(`Enter job ID for interview scheduling:\n${jobPrompt}`, String(backendJobs[0].id));
+                if (!jobIdInput) return;
+                const jobId = Number(jobIdInput);
+                if (!jobId || !backendJobs.some(job => job.id === jobId)) {
+                    alert('Invalid job ID.');
+                    return;
+                }
+
+                const jobCandidates = await apiRequest(`/jobs/${jobId}/candidates?sort=latest`);
+                if (!jobCandidates.length) {
+                    alert('No candidates found for this job.');
+                    return;
+                }
+
+                const candidatePrompt = jobCandidates
+                    .map(candidate => `${candidate.id}: ${candidate.full_name || candidate.file_name}`)
+                    .join('\n');
+                const candidateIdInput = prompt(`Enter candidate ID:\n${candidatePrompt}`, String(jobCandidates[0].id));
+                if (!candidateIdInput) return;
+                const candidateId = Number(candidateIdInput);
+                const selectedCandidate = jobCandidates.find(candidate => candidate.id === candidateId);
+                if (!selectedCandidate) {
+                    alert('Invalid candidate ID.');
+                    return;
+                }
+
+                const roundName = prompt('Interview round (e.g., Technical Round 1):', 'Technical Round');
+                if (!roundName) return;
+                const date = prompt('Interview date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+                if (!date) return;
+                const time = prompt('Interview time (e.g., 2:00 PM):', '2:00 PM');
+                if (!time) return;
+                const interviewer = prompt('Interviewer name:', 'Hiring Team') || 'Hiring Team';
+                const mode = prompt('Mode (Video Call / In-Person):', 'Video Call') || 'Video Call';
+                const duration = Number(prompt('Duration in minutes:', '45') || '45');
+                const notes = prompt('Notes (optional):', '') || '';
+                const meetLink = prompt('Meeting link (optional):', '') || '';
+
+                const updated = await apiRequest(`/jobs/${jobId}/candidates/${candidateId}/interviews`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        round_name: roundName,
+                        date,
+                        time,
+                        mode,
+                        interviewer,
+                        duration_minutes: isNaN(duration) ? 45 : duration,
+                        notes,
+                        meet_link: meetLink
+                    })
+                });
+
+                if (typeof upsertBackendCandidateFromApi === 'function') {
+                    upsertBackendCandidateFromApi(updated);
+                }
+                await loadInterviews();
+                alert(`Interview scheduled for ${selectedCandidate.full_name || selectedCandidate.file_name}.`);
+            } catch (error) {
+                alert(`Could not schedule interview: ${error.message}`);
+            }
         }
 

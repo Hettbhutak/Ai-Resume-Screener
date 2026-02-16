@@ -1,17 +1,28 @@
 import shutil
+import json
 from pathlib import Path
 
-from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, Query, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
-from sqlalchemy import func
-from sqlalchemy.orm import Session
+from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, Query, UploadFile#type: ignore
+from fastapi.middleware.cors import CORSMiddleware#type: ignore
+from fastapi.responses import FileResponse#type: ignore
+from sqlalchemy import func#type: ignore
+from sqlalchemy import text#type: ignore
+from sqlalchemy.orm import Session#type: ignore
 
 from .config import settings
 from .database import Base, SessionLocal, engine, get_db
 from .models import CandidateResume, Job
 from .scoring import join_db_list, split_db_list
-from .schemas import CandidateResponse, CandidateUpdate, JobCreate, JobResponse, ProcessingStatusResponse, UploadResponse
+from .schemas import (
+    CandidateResponse,
+    CandidateStatusEmailCreate,
+    CandidateUpdate,
+    InterviewScheduleCreate,
+    JobCreate,
+    JobResponse,
+    ProcessingStatusResponse,
+    UploadResponse,
+)
 from .tasks import process_many
 
 app = FastAPI(title=settings.app_name)
@@ -30,6 +41,28 @@ app.add_middleware(
 def on_startup() -> None:
     Base.metadata.create_all(bind=engine)
     Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
+    _ensure_candidate_resume_columns()
+
+
+def _ensure_candidate_resume_columns() -> None:
+    # Minimal migration support for existing SQLite DB files.
+    with engine.begin() as conn:
+        cols = conn.execute(text("PRAGMA table_info(candidate_resumes)")).fetchall()
+        col_names = {row[1] for row in cols}
+        if "interview_timeline" not in col_names:
+            conn.execute(text("ALTER TABLE candidate_resumes ADD COLUMN interview_timeline TEXT DEFAULT '[]'"))
+        if "email_logs" not in col_names:
+            conn.execute(text("ALTER TABLE candidate_resumes ADD COLUMN email_logs TEXT DEFAULT '[]'"))
+
+
+def _safe_json_list(raw: str | None) -> list[dict]:
+    if not raw:
+        return []
+    try:
+        parsed = json.loads(raw)
+        return parsed if isinstance(parsed, list) else []
+    except Exception:
+        return []
 
 
 def _to_job_response(job: Job) -> JobResponse:
@@ -63,6 +96,8 @@ def _to_candidate_response(candidate: CandidateResume) -> CandidateResponse:
         final_score=candidate.final_score,
         recommendation=candidate.recommendation,
         match_reasons=split_db_list(candidate.match_reasons),
+        interview_timeline=_safe_json_list(candidate.interview_timeline),
+        email_logs=_safe_json_list(candidate.email_logs),
     )
 
 
@@ -233,6 +268,88 @@ def update_candidate(
     if payload.status is not None:
         candidate.status = payload.status
 
+    db.commit()
+    db.refresh(candidate)
+    return _to_candidate_response(candidate)
+
+
+@app.post("/jobs/{job_id}/candidates/{candidate_id}/interviews", response_model=CandidateResponse)
+def schedule_candidate_interview(
+    job_id: int,
+    candidate_id: int,
+    payload: InterviewScheduleCreate,
+    db: Session = Depends(get_db),
+):
+    candidate = (
+        db.query(CandidateResume)
+        .filter(CandidateResume.job_id == job_id, CandidateResume.id == candidate_id)
+        .first()
+    )
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+
+    timeline = _safe_json_list(candidate.interview_timeline)
+    timeline.append(
+        {
+            "stage": f"Interview Scheduled - {payload.round_name}",
+            "date": payload.date,
+            "time": payload.time,
+            "status": "current",
+            "interviewer": payload.interviewer,
+            "duration": f"{payload.duration_minutes} min",
+            "mode": payload.mode,
+            "notes": payload.notes,
+            "meetLink": payload.meet_link,
+        }
+    )
+    candidate.interview_timeline = json.dumps(timeline)
+    candidate.status = "interview"
+    db.commit()
+    db.refresh(candidate)
+    return _to_candidate_response(candidate)
+
+
+@app.post("/jobs/{job_id}/candidates/{candidate_id}/emails/status", response_model=CandidateResponse)
+def send_status_email(
+    job_id: int,
+    candidate_id: int,
+    payload: CandidateStatusEmailCreate,
+    db: Session = Depends(get_db),
+):
+    candidate = (
+        db.query(CandidateResume)
+        .filter(CandidateResume.job_id == job_id, CandidateResume.id == candidate_id)
+        .first()
+    )
+    if not candidate:
+        raise HTTPException(status_code=404, detail="Candidate not found")
+
+    emails = _safe_json_list(candidate.email_logs)
+
+    if payload.outcome == "selected":
+        default_subject = f"Congratulations! You're selected for {candidate.role or 'the role'}"
+        default_message = "We are happy to inform you that you have been selected. We will share next steps shortly."
+        candidate.recommendation = "Shortlist"
+    else:
+        default_subject = f"Application update for {candidate.role or 'the role'}"
+        default_message = "Thank you for your time. At this stage, we are moving ahead with other candidates."
+        candidate.recommendation = "Reject"
+
+    emails.append(
+        {
+            "type": "Selection & Offer" if payload.outcome == "selected" else "Rejection",
+            "subject": payload.subject or default_subject,
+            "body": payload.message or default_message,
+            "sentDate": "",
+            "status": "sent",
+            "to": candidate.email,
+        }
+    )
+    # keep plain date format for existing UI
+    from datetime import datetime
+    emails[-1]["sentDate"] = datetime.utcnow().strftime("%Y-%m-%d")
+
+    candidate.email_logs = json.dumps(emails)
     db.commit()
     db.refresh(candidate)
     return _to_candidate_response(candidate)
