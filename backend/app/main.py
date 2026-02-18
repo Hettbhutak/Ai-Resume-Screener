@@ -1,4 +1,5 @@
 import shutil
+import os
 from pathlib import Path
 
 from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, Query, UploadFile
@@ -139,15 +140,20 @@ def bulk_upload_resumes(
     if not queued_ids:
         raise HTTPException(status_code=400, detail="No supported files uploaded. Use PDF, DOCX, TXT, MD")
 
-    # Open fresh DB session in background to avoid stale request session.
-    def _runner(ids: list[int]) -> None:
-        worker_db = SessionLocal()
-        try:
-            process_many(worker_db, ids)
-        finally:
-            worker_db.close()
+    # Vercel Python functions are serverless. Background tasks may not continue
+    # after the response returns, so process inline there.
+    if os.getenv("VERCEL"):
+        process_many(db, queued_ids)
+    else:
+        # Open fresh DB session in background to avoid stale request session.
+        def _runner(ids: list[int]) -> None:
+            worker_db = SessionLocal()
+            try:
+                process_many(worker_db, ids)
+            finally:
+                worker_db.close()
 
-    background_tasks.add_task(_runner, queued_ids)
+        background_tasks.add_task(_runner, queued_ids)
 
     return UploadResponse(job_id=job_id, accepted_files=len(queued_ids), queued_resume_ids=queued_ids)
 

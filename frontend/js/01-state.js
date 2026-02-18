@@ -191,7 +191,11 @@
         let screeningPollTimer = null;
         let backendJobs = [];
         let backendCandidatesCache = [];
-        const API_BASE_URL = 'http://127.0.0.1:8000';
+        const API_BASE_URL = (() => {
+            const host = window.location.hostname;
+            const isLocal = host === 'localhost' || host === '127.0.0.1';
+            return isLocal ? 'http://127.0.0.1:8000' : `${window.location.origin}/api`;
+        })();
 
         // Email Templates
         const emailTemplates = {
