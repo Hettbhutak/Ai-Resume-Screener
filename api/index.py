@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 import sys
 from fastapi import FastAPI
@@ -11,5 +12,15 @@ if str(BACKEND_DIR) not in sys.path:
 from app.main import app as backend_app  # noqa: E402
 
 # Serve backend under /api when deployed behind root-level Vercel rewrites.
-app = FastAPI()
+# Explicitly forward lifespan so backend startup creates tables/storage.
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    await backend_app.router.startup()
+    try:
+        yield
+    finally:
+        await backend_app.router.shutdown()
+
+
+app = FastAPI(lifespan=lifespan)
 app.mount("/api", backend_app)
